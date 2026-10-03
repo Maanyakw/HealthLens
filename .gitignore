@@ -1,0 +1,33 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Build / cache
+dist/
+build/
+.cache/
+
+# OS
+.DS_Store
+
+# Jupyter
+.jupyter/
+
+# ML generated files
+*.pkl
+*.joblib
+
+# IDE
+.vscode/
