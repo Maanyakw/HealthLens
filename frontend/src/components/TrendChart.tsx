@@ -25,7 +25,16 @@ function smoothPath(pts: { x: number; y: number }[]) {
   return d;
 }
 
-export default function TrendChart({ months, series: all }: { months: string[]; series: Series }) {
+export default function TrendChart({
+  months,
+  series: all,
+  bounds,
+}: {
+  months: string[];
+  series: Series;
+  /** Optional [min, max] the axis may never go beyond, e.g. [0, 100] for percentages. */
+  bounds?: [number, number];
+}) {
   const keys = Object.keys(all);
   const [key, setKey] = useState<string>(keys[0]);
   const [active, setActive] = useState(months.length - 1);
@@ -36,8 +45,8 @@ export default function TrendChart({ months, series: all }: { months: string[]; 
   const min = Math.min(...vals);
   const max = Math.max(...vals);
   const span = max - min || 1;
-  const lo = min - span * 0.35;
-  const hi = max + span * 0.35;
+  const lo = bounds ? Math.max(bounds[0], min - span * 0.35) : min - span * 0.35;
+  const hi = bounds ? Math.min(bounds[1], max + span * 0.35) : max + span * 0.35;
 
   const x = (i: number) => PAD.l + (i * (W - PAD.l - PAD.r)) / (vals.length - 1);
   const y = (v: number) => PAD.t + ((hi - v) / (hi - lo)) * (H - PAD.t - PAD.b);

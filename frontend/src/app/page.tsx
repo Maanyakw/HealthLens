@@ -22,7 +22,7 @@ export default function Home() {
           </nav>
           <div className="nav-actions">
             <ThemeSwitcher />
-            <Link href="/dashboard" className="btn btn-primary btn-sm">
+            <Link href="/assess" className="btn btn-primary btn-sm">
               Get started
             </Link>
           </div>
@@ -43,13 +43,13 @@ export default function Home() {
               track health trends over time.
             </p>
             <div className="cta-row">
-              <Link href="/dashboard" className="btn btn-primary">
+              <Link href="/assess" className="btn btn-primary">
                 Start health assessment
                 <Icon name="arrow" size={18} />
               </Link>
               <Link href="/dashboard" className="btn btn-ghost">
-                <Icon name="upload" size={18} />
-                Upload report
+                <Icon name="grid" size={18} />
+                View dashboard
               </Link>
             </div>
             <p className="note">
@@ -225,7 +225,7 @@ export default function Home() {
             <span className="cta-ring" />
             <h2>Start understanding your health</h2>
             <p>Explore your health data with a simple, explainable AI-powered experience.</p>
-            <Link href="/dashboard" className="btn btn-invert">
+            <Link href="/assess" className="btn btn-invert">
               Get started
               <Icon name="arrow" size={18} />
             </Link>

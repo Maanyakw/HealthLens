@@ -42,15 +42,67 @@ export type PredictResponse = {
   disclaimer: string;
 };
 
-export async function predict(patient: PatientInput): Promise<PredictResponse> {
-  const res = await fetch(`${API_URL}/predict`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(patient),
-  });
-  if (!res.ok) {
-    const detail = await res.text();
-    throw new Error(`API error ${res.status}: ${detail}`);
+export type WhatIfResponse = {
+  changes: Record<string, number>;
+  before: number;
+  after: number;
+  threshold: number;
+  flagged_before: boolean;
+  flagged_after: boolean;
+};
+
+export type ModelInfo = {
+  model: string;
+  features_used_by_model: string[];
+  dataset: string;
+  threshold: number;
+  n_train: number;
+  n_test: number;
+  test_metrics: {
+    roc_auc: number;
+    roc_auc_95ci: [number, number];
+    pr_auc: number;
+    recall: number;
+    precision: number;
+    specificity: number;
+  };
+  limitations: string[];
+  disclaimer: string;
+};
+
+async function call<T>(path: string, init?: RequestInit): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, init);
+  } catch {
+    throw new Error(
+      `Could not reach the HealthLens API at ${API_URL}. If you are testing locally, start it with: uvicorn backend.main:app --port 8000`,
+    );
   }
-  return res.json();
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = await res.json();
+      detail = Array.isArray(body.detail)
+        ? body.detail.map((d: { loc?: string[]; msg?: string }) => `${d.loc?.slice(-1)[0]}: ${d.msg}`).join("; ")
+        : String(body.detail ?? "");
+    } catch {
+      /* ignore */
+    }
+    throw new Error(detail || `The API returned an error (${res.status}).`);
+  }
+  return res.json() as Promise<T>;
 }
+
+const json = (body: unknown): RequestInit => ({
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(body),
+});
+
+export const predict = (patient: PatientInput) => call<PredictResponse>("/predict", json(patient));
+
+export const whatIf = (patient: PatientInput, changes: Record<string, number>) =>
+  call<WhatIfResponse>("/what-if", json({ patient, changes }));
+
+export const getModelInfo = () => call<ModelInfo>("/model-info");

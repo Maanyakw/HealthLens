@@ -141,7 +141,7 @@ def model_info():
         "limitations": [
             "Trained on 768 women aged 21+ of Pima Indian heritage; it may not transfer to other groups.",
             "Small test set (154 patients), so the metrics have wide uncertainty.",
-            "Tuned to catch most higher-risk patients, so about 1 in 3 people flagged will not have diabetes.",
+            f"Tuned to catch most higher-risk patients, so about {round((1 - t['at_chosen_threshold']['precision']) * 100)}% of people flagged will not have diabetes.",
             "Explanations show what the model uses, not what causes diabetes.",
         ],
         "disclaimer": DISCLAIMER,
