@@ -1,0 +1,86 @@
+{
+  "created_utc": "2026-10-15T15:26:54+00:00",
+  "sklearn_version": "1.9.1",
+  "random_state": 42,
+  "dataset": "Pima Indians Diabetes (768 rows, women 21+, Pima Indian heritage)",
+  "input_features": [
+    "Pregnancies",
+    "Glucose",
+    "BloodPressure",
+    "SkinThickness",
+    "Insulin",
+    "BMI",
+    "DiabetesPedigreeFunction",
+    "Age"
+  ],
+  "model": "logreg",
+  "feature_set": "baseline",
+  "best_params": {
+    "model__C": 0.01,
+    "select": "RFE(75%)"
+  },
+  "features_used_by_model": [
+    "Pregnancies",
+    "Glucose",
+    "Insulin",
+    "BMI",
+    "DiabetesPedigreeFunction",
+    "Age"
+  ],
+  "threshold": 0.2844569025400903,
+  "target_recall": 0.8,
+  "n_train": 614,
+  "n_test": 154,
+  "cv": {
+    "cv_roc_auc": 0.8463205980066444,
+    "cv_roc_auc_std": 0.02770886734740836,
+    "cv_pr_auc": 0.7418459060688326,
+    "cv_pr_auc_std": 0.059405077055964754,
+    "cv_recall": 0.719767441860465,
+    "cv_recall_std": 0.06684745797463187,
+    "cv_precision": 0.6567450677211065,
+    "cv_precision_std": 0.06652821425122593,
+    "cv_f1": 0.6811308179214451,
+    "cv_f1_std": 0.025706212675067754,
+    "cv_accuracy": 0.7647007863521258,
+    "cv_accuracy_std": 0.032350474682822594
+  },
+  "test": {
+    "roc_auc": 0.8061111111111111,
+    "roc_auc_95ci": [
+      0.736014944392837,
+      0.8669132597113214
+    ],
+    "pr_auc": 0.6520532639305325,
+    "brier": 0.17852162003734182,
+    "at_chosen_threshold": {
+      "threshold": 0.2845,
+      "accuracy": 0.7077922077922078,
+      "precision": 0.56,
+      "recall": 0.7777777777777778,
+      "specificity": 0.67,
+      "f1": 0.6511627906976745,
+      "tn": 67,
+      "fp": 33,
+      "fn": 12,
+      "tp": 42
+    },
+    "at_0.5": {
+      "threshold": 0.5,
+      "accuracy": 0.7337662337662337,
+      "precision": 0.6326530612244898,
+      "recall": 0.5740740740740741,
+      "specificity": 0.82,
+      "f1": 0.6019417475728155,
+      "tn": 82,
+      "fp": 18,
+      "fn": 23,
+      "tp": 31
+    },
+    "majority_class_accuracy": 0.6493506493506493
+  },
+  "files": {
+    "calibrated_model": "model.joblib",
+    "uncalibrated_pipeline": "pipeline_uncalibrated.joblib"
+  }
+}
