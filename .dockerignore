@@ -1,0 +1,9 @@
+frontend
+ml/notebooks
+ml/reports
+ml/data
+.git
+.venv
+venv
+**/__pycache__
+**/node_modules
