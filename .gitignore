@@ -28,6 +28,8 @@ build/
 # ML generated files
 *.pkl
 *.joblib
+!ml/models/*.joblib
+!ml/models/model_card.json
 
 # IDE
 .vscode/
