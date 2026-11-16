@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { Gauge, Icon } from "@/components/ui";
 import DailyPlan from "@/components/DailyPlan";
 import FactorBars from "@/components/FactorBars";
+import AskHealthLens from "@/components/AskHealthLens";
+import Narrative from "@/components/Narrative";
 import { getModelInfo, whatIf, type ModelInfo, type PatientInput, type PredictResponse, type WhatIfResponse } from "@/lib/api";
 import "./assess.css";
 
@@ -108,10 +110,12 @@ export default function AssessmentResult({
   input,
   result,
   onNew,
+  glucoseComparable = null,
 }: {
   input: PatientInput;
   result: PredictResponse;
   onNew: () => void;
+  glucoseComparable?: boolean | null;
 }) {
   const [info, setInfo] = useState<ModelInfo | null>(null);
   useEffect(() => {
@@ -151,8 +155,8 @@ export default function AssessmentResult({
           )}
           {result.not_measured.length > 0 && (
             <p className="muted as-foot">
-              <Icon name="info" size={16} /> Not measured: {result.not_measured.length} value(s) were filled with typical values,
-              so the score is less certain.
+              <Icon name="info" size={16} /> Not measured: {result.not_measured.length} value(s) were left blank. The model can still
+              score without them, but the result is less certain.
             </p>
           )}
         </section>
@@ -188,9 +192,13 @@ export default function AssessmentResult({
         </section>
       )}
 
+      <Narrative input={input} result={result} glucoseComparable={glucoseComparable} />
+
       <DailyPlan input={input} result={result} />
 
       <WhatIf input={input} result={result} />
+
+      <AskHealthLens input={input} result={result} glucoseComparable={glucoseComparable} />
 
       <section className="card as-card" aria-labelledby="rel-h">
         <h2 id="rel-h">How reliable is this?</h2>

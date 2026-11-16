@@ -1,0 +1,16 @@
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+.git
+frontend
+ml/notebooks
+ml/data
+ml/models
+ml/results*
+sample_reports
+tools
+backend/tests
+*.ipynb
+.env*
+# NOTE: ml/artifacts must NOT be ignored (the Docker build copies it).

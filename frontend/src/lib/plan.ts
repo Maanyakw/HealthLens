@@ -81,7 +81,7 @@ export function buildPlan(input: PatientInput, result: PredictResponse): Plan {
   }
   if (result.not_measured.length > 0) {
     soon.push(
-      "Ask for the missing measurements (for example glucose and BMI) next time. The score is more reliable with real values than with typical ones.",
+      "Ask for the missing measurements (for example glucose and BMI) next time. The result is less certain when values are left blank.",
     );
   }
   if (input.Pregnancies > 0 || input.Age >= 35) {

@@ -1,0 +1,28 @@
+/* Theme-neutral styles: they use currentColor, so they follow whichever HealthLens theme is active. */
+.hl2-card { border: 1px solid color-mix(in srgb, currentColor 18%, transparent); border-radius: 14px; padding: 16px; margin: 16px 0;
+  background: color-mix(in srgb, currentColor 4%, transparent); }
+.hl2-card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+.hl2-muted { opacity: .72; font-size: .86rem; }
+.hl2-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.hl2-btn { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); background: transparent; color: inherit; border-radius: 999px;
+  padding: 7px 14px; cursor: pointer; font: inherit; font-size: .9rem; }
+.hl2-btn:hover:not(:disabled) { background: color-mix(in srgb, currentColor 10%, transparent); }
+.hl2-btn:disabled { opacity: .45; cursor: not-allowed; }
+.hl2-btn.primary { font-weight: 600; border-width: 2px; }
+.hl2-badge { font-size: .74rem; padding: 2px 8px; border-radius: 999px; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); }
+.hl2-warn { border-left: 4px solid #c9890a; padding: 8px 12px; margin: 8px 0; background: color-mix(in srgb, #c9890a 12%, transparent); border-radius: 6px; font-size: .9rem; }
+.hl2-error { border-left: 4px solid #c0392b; padding: 8px 12px; margin: 8px 0; background: color-mix(in srgb, #c0392b 12%, transparent); border-radius: 6px; font-size: .9rem; }
+.hl2-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.hl2-table th, .hl2-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent); vertical-align: top; }
+.hl2-table input[type=number] { width: 7rem; font: inherit; padding: 4px 6px; background: transparent; color: inherit; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); border-radius: 6px; }
+.hl2-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.hl2-tabs button[aria-pressed=true] { background: color-mix(in srgb, currentColor 14%, transparent); }
+.hl2-chat-log { max-height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.hl2-msg { padding: 8px 12px; border-radius: 12px; max-width: 88%; white-space: pre-wrap; font-size: .93rem; }
+.hl2-msg.user { align-self: flex-end; background: color-mix(in srgb, currentColor 14%, transparent); }
+.hl2-msg.assistant { align-self: flex-start; border: 1px solid color-mix(in srgb, currentColor 18%, transparent); }
+.hl2-input { flex: 1; min-width: 12rem; font: inherit; padding: 8px 12px; border-radius: 999px; background: transparent; color: inherit;
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent); }
+.hl2-skel { height: 14px; border-radius: 6px; background: color-mix(in srgb, currentColor 12%, transparent); margin: 8px 0; animation: hl2p 1.2s ease-in-out infinite; }
+@keyframes hl2p { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .hl2-skel { animation: none; } }

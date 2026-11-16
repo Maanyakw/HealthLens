@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
 import AssessmentResult from "@/components/AssessmentResult";
+import ReportUpload, { type ConfirmedValues } from "@/components/ReportUpload";
 import { Icon } from "@/components/ui";
 import { predict, type PatientInput, type PredictResponse } from "@/lib/api";
 import { loadHistory, saveAssessment } from "@/lib/history";
@@ -22,7 +23,7 @@ const FIELDS: {
 }[] = [
   { key: "Age", label: "Age", unit: "years", hint: "The model was trained on women aged 21 and over.", min: 18, max: 100, step: 1, optional: false },
   { key: "Pregnancies", label: "Pregnancies", unit: "number", hint: "How many times you have been pregnant (0 if none).", min: 0, max: 20, step: 1, optional: false },
-  { key: "Glucose", label: "Glucose", unit: "mg/dL", hint: "Plasma glucose from a blood test. Leave blank if not measured.", min: 1, max: 300, step: 1, optional: true },
+  { key: "Glucose", label: "Glucose", unit: "mg/dL", hint: "The 2-hour value of an oral glucose tolerance test. A fasting or random reading is not the same and can make the score too low. Leave blank if not measured.", min: 1, max: 300, step: 1, optional: true },
   { key: "BMI", label: "BMI", unit: "kg/m²", hint: "Body mass index. Leave blank if not measured.", min: 1, max: 70, step: 0.1, optional: true },
   { key: "BloodPressure", label: "Blood pressure (diastolic)", unit: "mmHg", hint: "Only the lower number, e.g. 76 in 118/76.", min: 1, max: 200, step: 1, optional: true },
   { key: "SkinThickness", label: "Skin-fold thickness", unit: "mm", hint: "Triceps skin-fold. Rarely known, leave blank if so.", min: 1, max: 100, step: 1, optional: true },
@@ -42,14 +43,16 @@ export default function AssessPage() {
   const [errors, setErrors] = useState<Partial<Record<Key, string>>>({});
   const [apiError, setApiError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState<{ input: PatientInput; result: PredictResponse } | null>(null);
+  const [done, setDone] = useState<{ input: PatientInput; result: PredictResponse; glucoseComparable: boolean | null } | null>(null);
+  // set when values came from a lab report (true = the glucose is a 2-hour tolerance-test value); null = typed by hand
+  const [glucoseComparable, setGlucoseComparable] = useState<boolean | null>(null);
 
   // /assess?view=latest shows the most recent saved result (used by the dashboard link)
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("view") !== "latest") return;
     const last = loadHistory()[0];
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (last) setDone({ input: last.input, result: last.result });
+    if (last) setDone({ input: last.input, result: last.result, glucoseComparable: null });
   }, []);
 
   function validate() {
@@ -72,6 +75,15 @@ export default function AssessPage() {
     return { errs, input: input as PatientInput };
   }
 
+  // Values confirmed from a lab report fill the form; the person can still edit everything before scoring.
+  function fillFromReport(v: ConfirmedValues, meta: { glucoseComparable: boolean }) {
+    const next = { ...values };
+    for (const [k, n] of Object.entries(v)) next[k as Key] = String(n);
+    setValues(next);
+    setErrors({});
+    setGlucoseComparable("Glucose" in v ? meta.glucoseComparable : null);
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setApiError("");
@@ -82,7 +94,7 @@ export default function AssessPage() {
     try {
       const result = await predict(input);
       saveAssessment(input, result);
-      setDone({ input, result });
+      setDone({ input, result, glucoseComparable });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setApiError(err instanceof Error ? err.message : "Something went wrong.");
@@ -105,6 +117,7 @@ export default function AssessPage() {
             <AssessmentResult
               input={done.input}
               result={done.result}
+              glucoseComparable={done.glucoseComparable}
               onNew={() => {
                 setDone(null);
                 window.scrollTo({ top: 0 });
@@ -120,16 +133,18 @@ export default function AssessPage() {
               </div>
             </div>
 
+            <ReportUpload onConfirm={fillFromReport} />
+
             <form className="card as-form" onSubmit={onSubmit} noValidate>
               <div className="as-examples">
                 <span className="muted">Just exploring?</span>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setValues(EXAMPLES.low)}>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setValues(EXAMPLES.low); setGlucoseComparable(null); }}>
                   Fill a lower-risk example
                 </button>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setValues(EXAMPLES.high)}>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setValues(EXAMPLES.high); setGlucoseComparable(null); }}>
                   Fill a higher-risk example
                 </button>
-                <button type="button" className="link as-reset" onClick={() => { setValues(EMPTY); setErrors({}); }}>
+                <button type="button" className="link as-reset" onClick={() => { setValues(EMPTY); setErrors({}); setGlucoseComparable(null); }}>
                   Clear
                 </button>
               </div>
@@ -151,7 +166,10 @@ export default function AssessPage() {
                         max={f.max}
                         step={f.step}
                         value={values[f.key]}
-                        onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                        onChange={(e) => {
+                          setValues({ ...values, [f.key]: e.target.value });
+                          if (f.key === "Glucose") setGlucoseComparable(null); // edited by hand: we no longer know what kind of reading it is
+                        }}
                         aria-describedby={`${f.key}-hint`}
                         aria-invalid={!!errors[f.key]}
                       />
