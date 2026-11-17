@@ -1,0 +1,129 @@
+{
+  "model": {
+    "name": "TabPFN-3.5",
+    "tabpfn_package_version": "10.0.0",
+    "settings": {
+      "fit_mode": "fit_with_cache",
+      "n_estimators": 1
+    }
+  },
+  "features": [
+    "Pregnancies",
+    "Glucose",
+    "BloodPressure",
+    "SkinThickness",
+    "Insulin",
+    "BMI",
+    "DiabetesPedigreeFunction",
+    "Age"
+  ],
+  "zero_means_missing": [
+    "Glucose",
+    "BloodPressure",
+    "SkinThickness",
+    "Insulin",
+    "BMI"
+  ],
+  "threshold": 0.3164,
+  "target_recall": 0.8,
+  "n_train": 614,
+  "n_test": 154,
+  "random_state": 42,
+  "background_k": 4,
+  "cv_roc_auc": {
+    "mean": 0.8493,
+    "std": 0.0213
+  },
+  "test": {
+    "test_roc_auc": 0.822,
+    "test_roc_auc_ci95": [
+      0.755,
+      0.887
+    ],
+    "test_pr_auc": 0.6821,
+    "test_brier": 0.1667
+  },
+  "at_chosen_threshold": {
+    "threshold": 0.3164,
+    "recall": 0.833,
+    "precision": 0.6,
+    "specificity": 0.7,
+    "accuracy": 0.747,
+    "tp": 45,
+    "fn": 9,
+    "fp": 30,
+    "tn": 70
+  },
+  "at_0.5": {
+    "threshold": 0.5,
+    "recall": 0.537,
+    "precision": 0.617,
+    "specificity": 0.82,
+    "accuracy": 0.721,
+    "tp": 29,
+    "fn": 25,
+    "fp": 18,
+    "tn": 82
+  },
+  "majority_class_accuracy": 0.649,
+  "comparison": {
+    "TabPFN-3.5": {
+      "cv_roc_auc": 0.8493,
+      "test_roc_auc": 0.822
+    },
+    "XGBoost": {
+      "cv_roc_auc": 0.8317,
+      "test_roc_auc": 0.8179
+    },
+    "LogReg": {
+      "cv_roc_auc": 0.8446,
+      "test_roc_auc": 0.8104
+    }
+  },
+  "predict_seconds": {
+    "rows_1": 0.104,
+    "rows_625": 4.429,
+    "rows_5120": 39.309
+  },
+  "global_importance": {
+    "Glucose": {
+      "auc_drop": 0.118,
+      "std": 0.0295
+    },
+    "BMI": {
+      "auc_drop": 0.025,
+      "std": 0.0142
+    },
+    "Age": {
+      "auc_drop": 0.0222,
+      "std": 0.0058
+    },
+    "Pregnancies": {
+      "auc_drop": 0.0103,
+      "std": 0.0082
+    },
+    "DiabetesPedigreeFunction": {
+      "auc_drop": 0.0064,
+      "std": 0.0045
+    },
+    "Insulin": {
+      "auc_drop": 0.0054,
+      "std": 0.0038
+    },
+    "SkinThickness": {
+      "auc_drop": 0.0024,
+      "std": 0.004
+    },
+    "BloodPressure": {
+      "auc_drop": -0.0037,
+      "std": 0.0023
+    }
+  },
+  "limitations": [
+    "Trained on 768 women (Pima Indian heritage, age 21+) from one study; it may not transfer to other groups.",
+    "The test set is small (154 patients), so every metric has wide uncertainty.",
+    "Tuned to catch most higher-risk patients, so about 40% of people flagged will not have diabetes.",
+    "Glucose in this dataset is a 2-hour oral glucose tolerance test value, not a fasting or random reading.",
+    "This is a screening aid, not a diagnosis. Talk to a clinician about any result."
+  ]
+}

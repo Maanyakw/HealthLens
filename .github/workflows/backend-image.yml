@@ -1,0 +1,47 @@
+# Builds the HealthLens backend Docker image on GitHub's servers and publishes it to GitHub Container Registry.
+# Azure Container Apps then pulls the image (Azure for Students blocks ACR Tasks, so Azure cannot build it itself).
+# No secrets go into the image: TABPFN_TOKEN and GEMINI_API_KEY are added later as Azure Container Apps secrets.
+name: backend-image
+
+on:
+  push:
+    branches: [tabpfn-v2]
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - backend/**
+      - ml/src/explain_agnostic.py
+      - ml/artifacts/**
+      - .github/workflows/backend-image.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Image name in lower case (GHCR requires it)
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/healthlens-api" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}

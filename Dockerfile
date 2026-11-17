@@ -1,17 +1,20 @@
-# HealthLens API image. Build from the project root:
-#   docker build -t healthlens-api .
-FROM python:3.13-slim
+FROM python:3.12-slim
 
-ENV PYTHONUNBUFFERED=1 MPLBACKEND=Agg
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 \
+    TABPFN_NO_BROWSER=1 TABPFN_MODEL_CACHE_DIR=/tmp/tabpfn HF_HOME=/tmp/hf \
+    ARTIFACT_DIR=/app/artifacts
+
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
+# CPU-only torch first, so the much larger CUDA build is not pulled in by tabpfn.
+RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
 COPY backend/requirements.txt backend/requirements.txt
-RUN pip install --no-cache-dir -r backend/requirements.txt
+RUN pip install -r backend/requirements.txt
 
-# Only what the API needs: code + trained model files
 COPY backend backend
-COPY ml/src ml/src
-COPY ml/models ml/models
+COPY ml/src/explain_agnostic.py ml/src/explain_agnostic.py
+COPY ml/artifacts artifacts
 
-# Cloud Run sets $PORT (default 8080)
-CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
+# The TabPFN token is NOT in the image: Cloud Run injects TABPFN_TOKEN from Secret Manager at start-up.
+CMD exec uvicorn main:app --app-dir backend --host 0.0.0.0 --port ${PORT:-8080}

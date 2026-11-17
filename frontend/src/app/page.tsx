@@ -3,7 +3,7 @@ import { Gauge, Icon, Logo } from "@/components/ui";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 const STEPS = [
-  { title: "Add health data", text: "Enter your health information manually or upload a health report." },
+  { title: "Add health data", text: "Enter your health information manually, or pre-fill it from a synthetic sample lab report (demo)." },
   { title: "AI analysis", text: "HealthLens processes the available data and evaluates relevant health patterns." },
   { title: "Understand results", text: "View risk predictions, confidence information, and explanations of important factors." },
   { title: "Track progress", text: "Monitor health trends and follow useful recommendations over time." },
@@ -148,7 +148,7 @@ export default function Home() {
                 <Icon name="file" size={22} />
               </span>
               <h3>Report analysis</h3>
-              <p>Upload health reports and extract relevant health information for easier understanding.</p>
+              <p>Try a synthetic sample lab report: an AI reads the values, you check them, and they pre-fill the form. Demo only, never upload real reports.</p>
             </article>
 
             <article className="tile t-trend">
@@ -167,7 +167,7 @@ export default function Home() {
                 <Icon name="chat" size={22} />
               </span>
               <h3>Ask HealthLens</h3>
-              <p>Get simple explanations of your health results and AI-generated insights.</p>
+              <p>Ask questions about your result in plain English and test &ldquo;what if&rdquo; changes. Answers are checked against the model&apos;s real numbers.</p>
             </article>
 
             <article className="tile t-insight">
@@ -204,7 +204,7 @@ export default function Home() {
           <div>
             <h2>Making AI health insights easier to understand</h2>
             <p className="lead">
-              HealthLens combines machine learning, explainable AI, report analysis, and health trend tracking into one
+              HealthLens combines machine learning, explainable AI, sample-report reading, and health trend tracking into one
               simple platform designed to help people better understand their health information.
             </p>
           </div>

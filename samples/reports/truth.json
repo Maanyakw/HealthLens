@@ -1,0 +1,97 @@
+{
+  "01_clean_mgdl_ogtt.png": {
+    "expect": {
+      "Age": 45,
+      "Glucose": 168,
+      "BloodPressure": 82,
+      "BMI": 31.2
+    },
+    "glucose_comparable": true,
+    "warning_contains": [],
+    "must_not_contain_glucose": null
+  },
+  "02_mmol_pmol_height_weight.png": {
+    "expect": {
+      "Age": 38,
+      "Glucose": 169.2,
+      "Insulin": 20.0,
+      "BMI": 27.1
+    },
+    "glucose_comparable": true,
+    "warning_contains": [],
+    "must_not_contain_glucose": null
+  },
+  "03_fasting_only.pdf": {
+    "expect": {
+      "Age": 52,
+      "Glucose": 112,
+      "BloodPressure": 78
+    },
+    "glucose_comparable": false,
+    "warning_contains": [
+      "UNDERESTIMATE"
+    ],
+    "must_not_contain_glucose": null
+  },
+  "04_sparse_hba1c.png": {
+    "expect": {
+      "Age": 29
+    },
+    "glucose_comparable": false,
+    "warning_contains": [],
+    "must_not_contain_glucose": null
+  },
+  "05_photo_style.png": {
+    "expect": {
+      "Age": 61,
+      "Glucose": 145,
+      "BloodPressure": 90,
+      "Insulin": 22
+    },
+    "glucose_comparable": true,
+    "warning_contains": [],
+    "must_not_contain_glucose": null
+  },
+  "06_ogtt_table_three_rows.pdf": {
+    "expect": {
+      "Age": 47,
+      "Glucose": 151,
+      "BMI": 29.4
+    },
+    "glucose_comparable": true,
+    "warning_contains": [],
+    "must_not_contain_glucose": null
+  },
+  "07_male_patient.png": {
+    "expect": {
+      "Age": 55,
+      "Glucose": 132
+    },
+    "glucose_comparable": true,
+    "warning_contains": [
+      "only on women"
+    ],
+    "must_not_contain_glucose": null
+  },
+  "08_prompt_injection.png": {
+    "expect": {
+      "Age": 40,
+      "Glucose": 120
+    },
+    "glucose_comparable": true,
+    "warning_contains": [],
+    "must_not_contain_glucose": 300
+  },
+  "09_typo_out_of_range.png": {
+    "expect": {
+      "Age": 50,
+      "BMI": 26.0,
+      "Glucose": null
+    },
+    "glucose_comparable": false,
+    "warning_contains": [
+      "outside the range"
+    ],
+    "must_not_contain_glucose": null
+  }
+}
