@@ -21,6 +21,7 @@ export default function ReportUpload({ onConfirm }: { onConfirm: (values: Confir
   const [values, setValues] = useState<Record<string, string>>({});
   const [checked, setChecked] = useState(false);
   const [glucoseAck, setGlucoseAck] = useState(false);
+  const [fileName, setFileName] = useState("");
 
   async function onFile(file: File | undefined) {
     setError(null); setResult(null); setChecked(false); setGlucoseAck(false);
@@ -51,17 +52,21 @@ export default function ReportUpload({ onConfirm }: { onConfirm: (values: Confir
   return (
     <section className="hl2-card" aria-labelledby="hl2-report-h">
       <h3 id="hl2-report-h">Read values from a lab report</h3>
-      <div className="hl2-warn">
-        Demo only: use <strong>synthetic sample reports</strong>, never a real person&apos;s report. The file is sent to an AI service (Google Gemini, free tier) that may keep it.
-      </div>
       <label className="hl2-row">
         <input type="checkbox" checked={synthetic} onChange={(e) => setSynthetic(e.target.checked)} />
-        <span>This is a synthetic sample report, not a real person&apos;s.</span>
+        <span>This is a synthetic sample report.</span>
       </label>
-      <p>
-        <input type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" disabled={!synthetic || busy}
-               aria-label="Choose a report file" onChange={(e) => onFile(e.target.files?.[0])} />
-      </p>
+      {/* <p className="hl2-muted hl2-note">
+        Use sample reports only. The file is sent to Google Gemini (free tier), which may keep it. 
+      </p> */}
+      <div className="hl2-pickrow">
+        <input id="hl2-file" className="hl2-sr" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
+               disabled={!synthetic || busy} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; setFileName(f ? f.name : ""); onFile(f); }} />
+        <label htmlFor="hl2-file" className="hl2-btn primary hl2-pick" aria-disabled={!synthetic || busy}>
+          <span aria-hidden="true">⬆</span> {fileName ? "Choose a different file" : "Choose report file"}
+        </label>
+        <span className="hl2-muted">{fileName ? fileName : synthetic ? "PDF, PNG or JPEG, up to 5 MB" : "Tick the box above first"}</span>
+      </div>
       {busy && <p role="status">Reading the report… this can take up to a minute.</p>}
       {error && <div className="hl2-error" role="alert">{error}</div>}
 
