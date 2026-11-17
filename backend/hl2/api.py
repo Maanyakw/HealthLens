@@ -21,6 +21,7 @@ Environment variables
     TABPFN_TOKEN             needed at start-up to download the TabPFN weights
 """
 from __future__ import annotations
+from .llm import GeminiClient, GroqClient, LLMError
 
 import os
 import time
@@ -97,7 +98,7 @@ class ResultIn(BaseModel):
 
 class ChatTurn(BaseModel):
     role: Literal["user", "assistant"]
-    text: str = Field(max_length=500)
+    text: str = Field(max_length=1500)
 
 
 class ChatIn(BaseModel):
@@ -136,10 +137,14 @@ def _client_id(req: Request) -> str:
 
 
 # ----------------------------------------------------------------------------- app
-def create_app(service: Optional[ModelService] = None, llm: Optional[Any] = None, limiter: Optional[Limiter] = None) -> FastAPI:
+def create_app(service: Optional[ModelService] = None, llm: Optional[Any] = None, limiter: Optional[Limiter] = None,
+chat_llm: Optional[Any] = None) -> FastAPI:
     state: Dict[str, Any] = {"service": service}
     use_llm = os.environ.get("HEALTHLENS_USE_LLM", "1") != "0"
     client = llm if llm is not None else (GeminiClient() if use_llm else None)
+
+    chat_client = chat_llm if chat_llm is not None else (GroqClient() if (use_llm and llm is None) else None)
+
     lim = limiter or Limiter(int(os.environ.get("LLM_PER_MINUTE", 8)), int(os.environ.get("LLM_DAILY_CAP", 150)))
 
     @asynccontextmanager
@@ -164,6 +169,13 @@ def create_app(service: Optional[ModelService] = None, llm: Optional[Any] = None
         if client is None or not getattr(client, "available", False):
             return None
         return client if lim.allow(_client_id(req)) else None
+    def chat_llm_for(req: Request):
+        """Groq for the chat if configured, otherwise the main client; None means rule-based answers."""
+        c = chat_client if (chat_client is not None and getattr(chat_client, "available", False)) else client
+        if c is None or not getattr(c, "available", False):
+            return None
+        return c if lim.allow(_client_id(req)) else None
+
 
     def facts_for(r: ResultIn):
         s = svc()
@@ -179,7 +191,8 @@ def create_app(service: Optional[ModelService] = None, llm: Optional[Any] = None
     @app.get("/health")
     def health():
         return {"status": "ok", "model_loaded": state["service"] is not None,
-                "llm_available": bool(client is not None and getattr(client, "available", False))}
+                "llm_available": bool(client is not None and getattr(client, "available", False)),
+                "chat_llm_available": bool(chat_client is not None and getattr(chat_client, "available", False))}
 
     @app.get("/model-info")
     def model_info():
@@ -226,7 +239,7 @@ def create_app(service: Optional[ModelService] = None, llm: Optional[Any] = None
             return {"changed": changes, "previous_score_percent": round(before * 100), "new_score_percent": round(after * 100),
                     "threshold_percent": round(s.threshold * 100), "flagged": after >= s.threshold}
 
-        bot = ChatAssistant(s.card, llm_for(request))
+        bot = ChatAssistant(s.card, chat_llm_for(request))  
         return bot.reply(c.message, [h.model_dump() for h in c.history], facts, run_what_if if c.result else None)
 
     @app.post("/report/read")
