@@ -54,7 +54,7 @@ export default function ReportUpload({ onConfirm }: { onConfirm: (values: Confir
       <h3 id="hl2-report-h">Read values from a lab report</h3>
       <label className="hl2-row">
         <input type="checkbox" checked={synthetic} onChange={(e) => setSynthetic(e.target.checked)} />
-        <span>This is a synthetic sample report.&apos;</span>
+        <span>This is a synthetic sample report.</span>
       </label>
       {/* <p className="hl2-muted hl2-note">
         Use sample reports only. The file is sent to Google Gemini (free tier), which may keep it. 
