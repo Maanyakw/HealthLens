@@ -133,7 +133,7 @@ export type Narration = {
   disclaimer: string;
   llm_rejected_reason: string | null;
 };
-export type ChatReply = { answer: string; source: "llm" | "rules" | "safety"; tools_used: string[]; disclaimer: string };
+export type ChatReply = { answer: string; source: "llm" | "general" | "rules" | "safety"; tools_used: string[]; disclaimer: string };
 export type ChatTurn = { role: "user" | "assistant"; text: string };
 
 export type ReportField = { value: number; note: string };

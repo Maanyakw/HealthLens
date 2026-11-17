@@ -1,0 +1,15 @@
+"""Facts about HealthLens that the chat assistant may use. Keep it short and true; update it when the project changes."""
+
+KNOWLEDGE = """HEALTHLENS KNOWLEDGE
+What it is: HealthLens is an academic explainable-AI web app that estimates diabetes risk from routine measurements. It is a screening aid, not a diagnosis.
+How to use it: enter what you know on the assessment page (blank fields are treated as not measured), or upload a synthetic sample report so the values are read for you, then check them and press Use these values.
+Prediction model: TabPFN-3.5 makes the risk estimate. XGBoost and Logistic Regression were trained as comparisons on the Pima Indians Diabetes dataset of 768 records. The three models performed similarly, so TabPFN is not claimed to be clearly better.
+Why TabPFN: it is a pretrained model designed for small tables like this one, and it had the highest cross-validation ROC-AUC (0.849, versus 0.845 for XGBoost and 0.832 for Logistic Regression), but the differences are small. Never describe TabPFN as simple, lightweight, fast or easy to integrate.
+Threshold: a score at or above the threshold shown on the result page is marked higher risk. It is set to catch most people who may have diabetes, which also means some false alarms.
+Explanations: exact Shapley values show which measurements pushed the score up or down. The what-could-lower-it section searches glucose and BMI only, lowering values, using a simple grid search that is not DiCE. The what-if sliders and the chat what-if tool re-score with the same model.
+AI features: Gemini reads uploaded reports, writes the plain-words explanation and powers this chat. Gemini never decides the risk score.
+Privacy: use synthetic or sample data only. Uploaded files are sent to Google Gemini's free tier, which may keep them. Past results are kept only in your own browser.
+Technology: Next.js frontend on Vercel, FastAPI backend on Azure Container Apps, Gemini API.
+Limits: the dataset is small and covers one population (adult women of Pima heritage), the model is not clinically validated, and glucose here means the 2-hour oral glucose tolerance test value in mg/dL.
+General reference ranges (information only, not a diagnosis): glucose 2 hours after an oral glucose tolerance test below 140 mg/dL is usually considered normal, 140 to 199 is the impaired-tolerance (prediabetes) range and 200 or more is in the diabetes range. Fasting glucose 70 to 99 mg/dL is usually considered normal, 100 to 125 is the prediabetes range and 126 or more is in the diabetes range. BMI (WHO) 18.5 to 24.9 is normal, 25 to 29.9 is overweight and 30 or more is obese. Asia-Pacific guidance uses lower cut-offs: overweight from 23 and obese from 25. Ranges differ between guidelines and people, so a clinician decides what is right for an individual.
+"""

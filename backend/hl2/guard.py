@@ -52,7 +52,7 @@ def allowed_set(values: Iterable[Optional[float]]) -> Set[float]:
     return s
 
 
-def validate(text: str, allowed: Set[float], max_words: int, tolerance: float = 0.51) -> Optional[str]:
+def validate(text: str, allowed: Set[float], max_words: int, tolerance: float = 0.51, check_numbers: bool = True) -> Optional[str]:
     """Return None if the text is fine, otherwise a short reason."""
     if not text or not text.strip():
         return "empty"
@@ -61,6 +61,8 @@ def validate(text: str, allowed: Set[float], max_words: int, tolerance: float = 
     for rx in _BANNED_RE:
         if rx.search(text):
             return f"banned wording: {rx.pattern[:40]}"
+    if not check_numbers:
+        return None
     for n in numbers_in(text):
         if abs(n) <= 3 and float(n).is_integer():      # "2-hour", "1 in 3", list counts
             continue

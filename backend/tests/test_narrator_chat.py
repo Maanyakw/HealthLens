@@ -165,3 +165,27 @@ def test_rule_based_what_if_edge_cases():
     assert "24%" not in bot.reply("what does glucose mean", facts=facts, run_what_if=wi)["answer"]
     boom = bot.reply("what if my glucose were 120", facts=facts, run_what_if=lambda c: 1 / 0)["answer"]
     assert boom  # a failing model call falls back to a fixed answer, never an error
+
+def test_general_answer_skips_number_check_but_keeps_wording_rules():
+    ok = FakeClient(final_text="[GENERAL] Paris has about 2 million people inside the city limits.")
+    out = ChatAssistant(CARD, ok).reply("how many people live in Paris?")
+    assert out["source"] == "general" and out["answer"].startswith("Paris") and "[GENERAL]" not in out["answer"]
+    bad = FakeClient(final_text="[GENERAL] You have diabetes, so start metformin.")
+    out2 = ChatAssistant(CARD, bad).reply("do i have diabetes?")
+    assert out2["source"] == "rules" and "banned wording" in out2["llm_rejected_reason"]
+
+def test_untagged_answer_is_treated_as_grounded():
+    c = FakeClient(final_text="Your score would drop to 12% if you walked daily.")
+    out = ChatAssistant(CARD, c).reply("how do I lower it?")
+    assert out["source"] == "rules" and "not in the facts" in out["llm_rejected_reason"]
+
+def test_general_tag_is_ignored_when_a_tool_was_used():
+    facts = narrator.build_facts(result(), CARD)
+    c = FakeClient(tool_script=[("what_if", {"Glucose": 120})], final_text="[GENERAL] The score would drop to 12%.")
+    out = ChatAssistant(CARD, c).reply("what if my glucose was 120?", facts=facts, run_what_if=what_if_runner)
+    assert out["source"] == "rules" and "not in the facts" in out["llm_rejected_reason"]
+
+def test_general_answer_markdown_is_stripped_not_rejected():
+    c = FakeClient(final_text="[GENERAL] **Paris** is the capital.\n- a big city")
+    out = ChatAssistant(CARD, c).reply("capital of France?")
+    assert out["source"] == "general" and "**" not in out["answer"] and "- " not in out["answer"]

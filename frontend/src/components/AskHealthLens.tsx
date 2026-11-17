@@ -42,18 +42,18 @@ export default function AskHealthLens({
   return (
     <section className="hl2-card" aria-labelledby="hl2-chat-h">
       <h3 id="hl2-chat-h">Ask HealthLens</h3>
-      <p className="hl2-muted">Answers come from your result and the model&apos;s documented performance. This is not medical advice.</p>
+      <p className="hl2-muted">Ask about your result, how HealthLens works, or anything else. HealthLens answers are checked against the model; general answers are not. This is not medical advice.</p>
       <div className="hl2-row" aria-label="Suggested questions">
         {CHIPS.map((c) => <button key={c} type="button" className="hl2-btn" disabled={busy || (!hasResult && c.includes("my"))} onClick={() => send(c)}>{c}</button>)}
       </div>
       <div className="hl2-chat-log" role="log" aria-live="polite">
-        {log.map((m, i) => <div key={i} className={`hl2-msg ${m.role}`}>{m.text}{m.source === "llm" && <div className="hl2-muted">AI-written, numbers checked</div>}</div>)}
+        {log.map((m, i) => <div key={i} className={`hl2-msg ${m.role}`}>{m.text}{m.source === "llm" && <div className="hl2-muted">AI-written, numbers checked</div>}{m.source === "general" && <div className="hl2-muted">General AI answer, not checked by HealthLens</div>}</div>)}
         {busy && <div className="hl2-msg assistant" role="status">Thinking…</div>}
         <div ref={end} />
       </div>
       {error && <div className="hl2-error" role="alert">{error}</div>}
       <form className="hl2-row" onSubmit={submit}>
-        <input className="hl2-input" value={text} maxLength={500} onChange={(e) => setText(e.target.value)} placeholder="Ask about your result…" aria-label="Your question" />
+        <input className="hl2-input" value={text} maxLength={500} onChange={(e) => setText(e.target.value)} placeholder="Ask about your result or anything else…" />
         <button type="submit" className="hl2-btn primary" disabled={busy || !text.trim()}>Send</button>
       </form>
       {disclaimer && <p className="hl2-muted">{disclaimer}</p>}

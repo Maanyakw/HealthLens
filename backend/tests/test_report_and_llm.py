@@ -253,3 +253,46 @@ def test_bad_request_does_not_fall_back_and_default_chain(monkeypatch):
     c = GeminiClient(api_key="K")
     assert c.models == DEFAULT_MODEL.split(",") and len(c.models) == 2
     assert GeminiClient(api_key="K", model=" a , b ,").models == ["a", "b"]
+
+def _groq(handler, models="m1,m2", key="K"):
+    import httpx
+    from hl2.llm import GroqClient
+    return GroqClient(api_key=key, model=models, http=httpx.Client(transport=httpx.MockTransport(handler)))
+
+
+def test_groq_answer_and_fallback_to_next_model():
+    import httpx, json
+    seen = []
+    def h(req):
+        model = json.loads(req.content)["model"]
+        seen.append(model)
+        if model == "m1":
+            return httpx.Response(429, json={"error": {"message": "rate limit"}})
+        return httpx.Response(200, json={"choices": [{"message": {"content": "hello"}}]})
+    c = _groq(h)
+    assert c.chat_with_tools("sys", [], "hi", [], lambda n, a: {}) == "hello"
+    assert seen == ["m1", "m2"] and c.last_model == "m2"
+
+
+def test_groq_tool_call_loop():
+    import httpx, json
+    calls = []
+    def h(req):
+        body = json.loads(req.content)
+        if not any(m["role"] == "tool" for m in body["messages"]):
+            return httpx.Response(200, json={"choices": [{"message": {"content": None, "tool_calls": [
+                {"id": "c1", "type": "function", "function": {"name": "what_if", "arguments": "{\"Glucose\": 120}"}}]}}]})
+        return httpx.Response(200, json={"choices": [{"message": {"content": "[GROUNDED] done"}}]})
+    c = _groq(h)
+    decl = [{"name": "what_if", "description": "d", "parameters": {"type": "object", "properties": {}}}]
+    out = c.chat_with_tools("sys", [], "what if", decl, lambda n, a: (calls.append((n, a)), {"ok": 1})[1])
+    assert out == "[GROUNDED] done" and calls == [("what_if", {"Glucose": 120})]
+
+
+def test_groq_errors_do_not_contain_the_key():
+    import httpx, pytest
+    from hl2.llm import LLMError
+    c = _groq(lambda req: httpx.Response(400, json={"error": {"message": "bad request"}}), models="m1", key="SECRETKEY123")
+    with pytest.raises(LLMError) as e:
+        c.chat_with_tools("s", [], "x", [], lambda n, a: {})
+    assert "SECRETKEY123" not in str(e.value) and "HTTP 400" in str(e.value)

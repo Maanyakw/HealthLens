@@ -162,6 +162,87 @@ class GeminiClient:
             contents.append({"role": "user", "parts": responses})
         raise LLMError("too many tool steps")
 
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_DEFAULT_MODEL = "openai/gpt-oss-120b,openai/gpt-oss-20b"
+
+
+class GroqClient:
+    """Chat client for Groq (OpenAI-compatible API), used only by the chat assistant.
+    Settings: GROQ_API_KEY, GROQ_MODEL (one name or a comma-separated list, tried in order)."""
+
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None,
+                 timeout: float = 30.0, http: Optional[httpx.Client] = None):
+        self.api_key = api_key or os.environ.get("GROQ_API_KEY", "")
+        raw = model or os.environ.get("GROQ_MODEL", "") or GROQ_DEFAULT_MODEL
+        self.models = [m.strip() for m in raw.split(",") if m.strip()] or [GROQ_DEFAULT_MODEL.split(",")[0]]
+        self.model = self.models[0]
+        self.last_model = None
+        self._http = http or httpx.Client(timeout=timeout)
+
+    @property
+    def available(self) -> bool:
+        return bool(self.api_key)
+
+    def _post(self, body: Dict[str, Any]) -> Dict[str, Any]:
+        if not self.available:
+            raise LLMError("GROQ_API_KEY is not set")
+        failures: List[str] = []
+        for model in self.models:
+            try:
+                r = self._http.post(GROQ_URL, json={**body, "model": model},
+                                    headers={"Authorization": f"Bearer {self.api_key}"})
+            except httpx.HTTPError as e:
+                failures.append(f"{model}: network error: {e.__class__.__name__}")
+                continue
+            if r.status_code == 200:
+                self.last_model = model
+                return r.json()
+            try:
+                detail = str(r.json().get("error", {}).get("message", ""))[:160]
+            except Exception:
+                detail = ""
+            failures.append(f"{model}: HTTP {r.status_code}" + (f": {detail}" if detail else ""))
+            if r.status_code not in (404, 429, 500, 502, 503, 504):
+                break                       # a bad request or bad key will fail on every model
+        raise LLMError("Groq failed (" + "; ".join(failures) + ")")
+
+    def chat_with_tools(self, system: str, history: List[Dict[str, str]], user_message: str,
+                        tool_declarations: List[Dict[str, Any]],
+                        run_tool: Callable[[str, Dict[str, Any]], Dict[str, Any]],
+                        max_steps: int = 3) -> str:
+        messages: List[Dict[str, Any]] = [{"role": "system", "content": system}]
+        for h in history[-8:]:
+            messages.append({"role": "user" if h["role"] == "user" else "assistant", "content": h["text"]})
+        messages.append({"role": "user", "content": user_message})
+        tools = [{"type": "function", "function": {
+            "name": t["name"], "description": t.get("description", ""),
+            "parameters": t.get("parameters", {"type": "object", "properties": {}})}} for t in tool_declarations]
+        for _ in range(max_steps + 1):
+            body: Dict[str, Any] = {"messages": messages, "temperature": 0.2, "max_tokens": 800}
+            if tools:
+                body["tools"] = tools
+                body["tool_choice"] = "auto"
+            data = self._post(body)
+            choices = data.get("choices") or []
+            if not choices:
+                raise LLMError("no choices returned")
+            msg = choices[0].get("message") or {}
+            calls = msg.get("tool_calls") or []
+            if not calls:
+                text = (msg.get("content") or "").strip()
+                if not text:
+                    raise LLMError("empty answer")
+                return text
+            messages.append({"role": "assistant", "content": msg.get("content") or "", "tool_calls": calls})
+            for c in calls:
+                fn = c.get("function") or {}
+                try:
+                    args = json.loads(fn.get("arguments") or "{}")
+                    out = run_tool(fn.get("name", ""), args if isinstance(args, dict) else {})
+                except Exception as e:      # tool errors go back to the model, not to the user
+                    out = {"error": str(e)[:200]}
+                messages.append({"role": "tool", "tool_call_id": c.get("id", ""), "content": json.dumps(out, default=str)})
+        raise LLMError("too many tool steps")
 
 class FakeClient:
     """Test double with the same public methods. Feed it scripted answers."""
